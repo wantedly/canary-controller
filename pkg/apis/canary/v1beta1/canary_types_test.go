@@ -34,7 +34,11 @@ func TestStorageCanary(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "default",
-		}}
+		},
+		Spec: CanarySpec{
+			TargetDeploymentName: "bar",
+		},
+	}
 	g := gomega.NewGomegaWithT(t)
 
 	// Test Create

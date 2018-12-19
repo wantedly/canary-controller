@@ -21,6 +21,11 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            targetDeploymentName:
+              type: string
+          required:
+          - targetDeploymentName
           type: object
         status:
           type: object
