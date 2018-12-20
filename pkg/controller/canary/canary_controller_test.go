@@ -24,7 +24,9 @@ import (
 	canaryv1beta1 "github.com/wantedly/canary-controller/pkg/apis/canary/v1beta1"
 	"golang.org/x/net/context"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,14 +36,38 @@ import (
 
 var c client.Client
 
-var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: "foo", Namespace: "default"}}
-var depKey = types.NamespacedName{Name: "foo-deployment", Namespace: "default"}
+var target = &appsv1.Deployment{
+	ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"},
+	Spec: appsv1.DeploymentSpec{
+		Selector: &metav1.LabelSelector{
+			MatchLabels: map[string]string{"deployment": "foo-deployment"},
+		},
+		Template: corev1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"deployment": "foo-deployment"}},
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name:  "nginx",
+						Image: "nginx",
+					},
+				},
+			},
+		},
+	},
+}
+var expectedRequest = reconcile.Request{NamespacedName: types.NamespacedName{Name: "foo-canary", Namespace: "default"}}
+var depKey = types.NamespacedName{Name: "foo-canary", Namespace: "default"}
 
 const timeout = time.Second * 5
 
 func TestReconcile(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
-	instance := &canaryv1beta1.Canary{ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "default"}}
+	instance := &canaryv1beta1.Canary{
+		ObjectMeta: metav1.ObjectMeta{Name: "foo-canary", Namespace: "default"},
+		Spec: canaryv1beta1.CanarySpec{
+			TargetDeploymentName: "foo",
+		},
+	}
 
 	// Setup the Manager and Controller.  Wrap the Controller Reconcile function so it writes each request to a
 	// channel when it is finished.
@@ -58,6 +84,15 @@ func TestReconcile(t *testing.T) {
 		close(stopMgr)
 		mgrStopped.Wait()
 	}()
+
+	// Create the target Deployment for testing
+	err = c.Create(context.TODO(), target)
+	if apierrors.IsInvalid(err) {
+		t.Logf("failed to create object, got an invalid object error: %v", err)
+		return
+	}
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	defer c.Delete(context.TODO(), target)
 
 	// Create the Canary object and expect the Reconcile and Deployment to be created
 	err = c.Create(context.TODO(), instance)

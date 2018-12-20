@@ -18,7 +18,6 @@ package canary
 
 import (
 	"context"
-	"reflect"
 
 	canaryv1beta1 "github.com/wantedly/canary-controller/pkg/apis/canary/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -105,49 +104,52 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
 			return reconcile.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
 
-	// TODO(user): Change this to be the object type created by your controller
-	// Define the desired Deployment object
-	deploy := &appsv1.Deployment{
+	// TODO(munisystem): Set a status into the Canary resource if the target deployment doesn't exist
+	target, err := r.getDeployment(instance.Spec.TargetDeploymentName, instance.Namespace)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
+		return reconcile.Result{}, err
+	}
+	copied := target.DeepCopy()
+
+	// Inject metadata
+	labels := copied.GetLabels()
+	labels["canary"] = "true"
+
+	spec := copied.Spec
+	spec.Template.Spec.Hostname = "canary"
+
+	for i := range spec.Template.Spec.Containers {
+		spec.Template.Spec.Containers[i].Env = append(spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
+			Name:  "CANARY_ENABLED",
+			Value: "1",
+		})
+	}
+
+	canary := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      instance.Name + "-deployment",
-			Namespace: instance.Namespace,
+			Name:        target.ObjectMeta.Name + "-canary",
+			Namespace:   instance.Namespace,
+			Labels:      labels,
+			Annotations: target.ObjectMeta.Annotations,
 		},
-		Spec: appsv1.DeploymentSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"deployment": instance.Name + "-deployment"},
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"deployment": instance.Name + "-deployment"}},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "nginx",
-							Image: "nginx",
-						},
-					},
-				},
-			},
-		},
-	}
-	if err := controllerutil.SetControllerReference(instance, deploy, r.scheme); err != nil {
-		return reconcile.Result{}, err
+		Spec: spec,
 	}
 
-	// TODO(user): Change this for the object type created by your controller
-	// Check if the Deployment already exists
-	found := &appsv1.Deployment{}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+	if err := controllerutil.SetControllerReference(instance, canary, r.scheme); err != nil {
+		return reconcile.Result{}, err
+	}
+	_, err = r.getDeployment(canary.Name, canary.Namespace)
 	if err != nil && errors.IsNotFound(err) {
-		log.Info("Creating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-		err = r.Create(context.TODO(), deploy)
+		log.Info("Creating Deployment for Canary server", "namespace", canary.Namespace, "name", canary.Name)
+		err = r.Create(context.TODO(), canary)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
@@ -155,15 +157,11 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	// TODO(user): Change this for the object type created by your controller
-	// Update the found object and write the result back if there are any changes
-	if !reflect.DeepEqual(deploy.Spec, found.Spec) {
-		found.Spec = deploy.Spec
-		log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-		err = r.Update(context.TODO(), found)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-	}
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileCanary) getDeployment(name, namespace string) (*appsv1.Deployment, error) {
+	found := &appsv1.Deployment{}
+	err := r.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: namespace}, found)
+	return found, err
 }
