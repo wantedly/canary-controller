@@ -5,4 +5,6 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: canary-sample
 spec:
-  targetDeploymentName: "foo"
+  targetDeploymentName: foo
+  targetContainerName: nginx
+  image: nginx:1.15.7

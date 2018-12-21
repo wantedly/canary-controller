@@ -28,6 +28,8 @@ type CanarySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	TargetDeploymentName string `json:"targetDeploymentName"`
+	TargetContainerName  string `json:"targetContainerName"`
+	Image                string `json:"image"`
 }
 
 // CanaryStatus defines the observed state of Canary

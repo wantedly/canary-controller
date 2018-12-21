@@ -119,26 +119,31 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	copied := target.DeepCopy()
 
-	// Inject metadata
-	labels := copied.GetLabels()
+	// Inject data into Canary's Deployment
+	labels := make(map[string]string, len(copied.GetLabels())+1)
 	labels["canary"] = "true"
+	for key, value := range copied.GetLabels() {
+		labels[key] = value
+	}
 
 	spec := copied.Spec
 	spec.Template.Spec.Hostname = "canary"
 
 	for i := range spec.Template.Spec.Containers {
+		if spec.Template.Spec.Containers[i].Name == instance.Spec.TargetContainerName {
+			spec.Template.Spec.Containers[i].Image = instance.Spec.Image
+		}
 		spec.Template.Spec.Containers[i].Env = append(spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
 			Name:  "CANARY_ENABLED",
 			Value: "1",
 		})
 	}
-
 	canary := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        target.ObjectMeta.Name + "-canary",
+			Name:        copied.ObjectMeta.Name + "-canary",
 			Namespace:   instance.Namespace,
 			Labels:      labels,
-			Annotations: target.ObjectMeta.Annotations,
+			Annotations: copied.ObjectMeta.Annotations,
 		},
 		Spec: spec,
 	}
