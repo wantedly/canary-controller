@@ -7,7 +7,7 @@ Canary Controller is a Custom Resource and Controller for managing Canary server
 The Canary Release is an approach to release a new application more safely. In short, the Canary Release consists of the following steps:
 
 1. Deploy new application. (called "Canary server")
-1. Send some of trafics to the Canary server. Typicatlly we'd join a Canary server for the Load Balancer and Load Balancer routes traffic using the DNS round robin. In Kubernetes, `Service` assumes this role
+1. Send some of trafics to the Canary server. Typicatlly we'd join a Canary server for the Load Balancer and Load Balancer routes traffic using the DNS round robin. In Kubernetes, `Service` assumes this role.
 1. Evaluate a Canary server by comparing with other server deployed old application (called Baseline server) using some metrics, for example RPS, resource usage and error rate.
 1. Roll out the new application to all servers OR rollback to the old version.
 
@@ -45,9 +45,9 @@ metadata:
   name: foo-canary
   namespace: default
 spec:
-  targetDeploymentName: "foo"
-  targetContainerName: "nginx"
-  image: "nginx:latest"
+  targetDeploymentName: foo
+  targetContainerName: nginx
+  image: nginx:latest
 ```
 
 Canary Controller looks up existing Deployment named "foo" in the "default" namespace and creates a Deployment based on "foo" and overrides the image of container named "nginx" to "nginx:latest":
