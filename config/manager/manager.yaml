@@ -40,6 +40,8 @@ spec:
         control-plane: controller-manager
         controller-tools.k8s.io: "1.0"
     spec:
+      imagePullSecrets:
+      - name: wantedlybotkey
       containers:
       - command:
         - /manager
