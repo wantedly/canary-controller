@@ -50,9 +50,9 @@ spec:
   image: nginx:latest
 ```
 
-Canary Controller looks up existing Deployment named "foo" in the "default" namespace and creates a Deployment based on "foo" and overrides the image of container named "nginx" to "nginx:latest":
+Canary Controller looks up existing Deployment named "foo" in the "default" namespace and creates a new Deployment based on "foo" and overrides the image of container named "nginx" to "nginx:latest":
 
-```
+```console
 $ kubectl get deploy -n default
 NAME      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 foo       1         1         1            1           1m
@@ -73,9 +73,9 @@ $ kubectl get deploy foo-canary -o json | jq '.spec.template.spec.containers[] |
 
 ```
 
-And the Deployment created by Canary Controller will cleanup when deletes the manifest:
+After testing the new Deployment, you can clean it up by running the following command:
 
-```
+```console
 $ kubectl delete -f config/sample/canary_v1beta1_canary.yaml
 canary.canary.k8s.wantedly.com "canary-sample" deleted
 
