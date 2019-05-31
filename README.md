@@ -6,12 +6,12 @@ Canary Controller is a Custom Resource and Controller for managing Canary server
 
 The Canary Release is an approach to release a new application more safely. In short, the Canary Release consists of the following steps:
 
-1. Deploy new application. (called "Canary server")
-1. Send some of trafics to the Canary server. Typicatlly we'd join a Canary server for the Load Balancer and Load Balancer routes traffic using the DNS round robin. In Kubernetes, `Service` assumes this role.
-1. Evaluate a Canary server by comparing with other server deployed old application (called Baseline server) using some metrics, for example RPS, resource usage and error rate.
+1. Deploy a new application. (called "Canary server")
+1. Send some of the traffics to the Canary server. Typically we'd join a Canary server for the Load Balancer and Load Balancer routes traffic using the DNS round robin. In Kubernetes, Service assumes this role.
+1. Evaluate a Canary server by comparing with other server deployed old application (called Baseline server) using some metrics, for example, RPS, resource usage, and error rate.
 1. Roll out the new application to all servers OR rollback to the old version.
 
-Canary Controller supports the second phase, managing a Canary server and routing. Canary Controller creates a `Deployment` of a Canary server based on the existing ones. Additionally, Deployment Canary Controller put some metadata to a generated Deployment for identifying whether an application is a Canary.
+Canary Controller supports the second phase, managing a Canary server and routing. Canary Controller creates a Deployment of a Canary server based on the existing ones. Additionally, Deployment Canary Controller put some metadata to a generated Deployment for identifying whether an application is a Canary.
 
 * Attach `canary: true` to Deployment's labels
 * Give a name the host of Pod to `canary`
@@ -19,7 +19,7 @@ Canary Controller supports the second phase, managing a Canary server and routin
 
 ## Installation
 
-This installation is dependent by [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md). If your environment is OSX then you can install these using the following commands:
+This installation depends on [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md). If your environment is OSX then you can install these using the following commands:
 
 ```
 $ brew install kubernetes-cli
