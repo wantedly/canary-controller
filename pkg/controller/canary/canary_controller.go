@@ -129,9 +129,13 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	spec := copied.Spec
 	spec.Template.Spec.Hostname = "canary"
 
+	containers := make(map[string]canaryv1beta1.CanaryContainer, 0)
+	for _, container := range instance.Spec.TargetContainers {
+		containers[container.Name] = container
+	}
 	for i := range spec.Template.Spec.Containers {
-		if spec.Template.Spec.Containers[i].Name == instance.Spec.TargetContainerName {
-			spec.Template.Spec.Containers[i].Image = instance.Spec.Image
+		if container, ok := containers[spec.Template.Spec.Containers[i].Name]; ok {
+			spec.Template.Spec.Containers[i].Image = container.Image
 		}
 		spec.Template.Spec.Containers[i].Env = append(spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
 			Name:  "CANARY_ENABLED",

@@ -22,16 +22,23 @@ spec:
           type: object
         spec:
           properties:
-            image:
-              type: string
-            targetContainerName:
-              type: string
+            targetContainers:
+              items:
+                properties:
+                  image:
+                    type: string
+                  name:
+                    type: string
+                required:
+                - name
+                - image
+                type: object
+              type: array
             targetDeploymentName:
               type: string
           required:
           - targetDeploymentName
-          - targetContainerName
-          - image
+          - targetContainers
           type: object
         status:
           type: object

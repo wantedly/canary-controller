@@ -27,9 +27,13 @@ import (
 type CanarySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	TargetDeploymentName string `json:"targetDeploymentName"`
-	TargetContainerName  string `json:"targetContainerName"`
-	Image                string `json:"image"`
+	TargetDeploymentName string            `json:"targetDeploymentName"`
+	TargetContainers     []CanaryContainer `json:"targetContainers"`
+}
+
+type CanaryContainer struct {
+	Name  string `json:"name"`
+	Image string `json:"image"`
 }
 
 // CanaryStatus defines the observed state of Canary

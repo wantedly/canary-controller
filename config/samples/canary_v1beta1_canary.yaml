@@ -6,5 +6,8 @@ metadata:
   name: canary-sample
 spec:
   targetDeploymentName: foo
-  targetContainerName: nginx
-  image: nginx:latest
+  targetContainers: 
+    - name: nginx
+      image: nginx:latest
+    - name: redis
+      image: redis:5.0.5

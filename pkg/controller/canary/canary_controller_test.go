@@ -68,8 +68,12 @@ func TestReconcile(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: "foo-canary", Namespace: "default"},
 		Spec: canaryv1beta1.CanarySpec{
 			TargetDeploymentName: "foo",
-			TargetContainerName:  "nginx",
-			Image:                "nginx:latest",
+			TargetContainers: []canaryv1beta1.CanaryContainer{
+				{
+					Name:  "nginx",
+					Image: "nginx:latest",
+				},
+			},
 		},
 	}
 
