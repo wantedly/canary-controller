@@ -46,8 +46,9 @@ metadata:
   namespace: default
 spec:
   targetDeploymentName: foo
-  targetContainerName: nginx
-  image: nginx:latest
+  targetContainers:
+  - name: nginx
+    image: nginx:latest
 ```
 
 Canary Controller looks up existing Deployment named "foo" in the "default" namespace and creates a new Deployment based on "foo" and overrides the image of container named "nginx" to "nginx:latest":
