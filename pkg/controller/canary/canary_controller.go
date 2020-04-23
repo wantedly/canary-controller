@@ -128,6 +128,8 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 
 	spec := copied.Spec
 	spec.Template.Spec.Hostname = "canary"
+	spec.Selector.MatchLabels["canary"] = "true"
+	spec.Template.Labels["canary"] = "true"
 
 	containers := make(map[string]canaryv1beta1.CanaryContainer, 0)
 	for _, container := range instance.Spec.TargetContainers {
