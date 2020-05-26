@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -29,11 +30,13 @@ type CanarySpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	TargetDeploymentName string            `json:"targetDeploymentName"`
 	TargetContainers     []CanaryContainer `json:"targetContainers"`
+	DisableLabelCopy     bool              `json:"disableLabelCopy"`
 }
 
 type CanaryContainer struct {
 	Name  string `json:"name"`
 	Image string `json:"image"`
+	Env   []v1.EnvVar
 }
 
 // CanaryStatus defines the observed state of Canary
