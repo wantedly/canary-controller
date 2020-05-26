@@ -140,6 +140,10 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	for i := range spec.Template.Spec.Containers {
 		if container, ok := containers[spec.Template.Spec.Containers[i].Name]; ok {
 			spec.Template.Spec.Containers[i].Image = container.Image
+			spec.Template.Spec.Containers[i].Env = append(
+				spec.Template.Spec.Containers[i].Env,
+				container.Env...,
+			)
 		}
 		spec.Template.Spec.Containers[i].Env = append(spec.Template.Spec.Containers[i].Env, corev1.EnvVar{
 			Name:  "CANARY_ENABLED",
