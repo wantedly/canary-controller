@@ -120,10 +120,12 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	copied := target.DeepCopy()
 
 	// Inject data into Canary's Deployment
-	labels := make(map[string]string, len(copied.GetLabels())+1)
+	labels := map[string]string{}
 	labels["canary"] = "true"
-	for key, value := range copied.GetLabels() {
-		labels[key] = value
+	if !instance.DisableLabelCopy {
+		for key, value := range copied.GetLabels() {
+			labels[key] = value
+		}
 	}
 
 	spec := copied.Spec
