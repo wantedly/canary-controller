@@ -32,7 +32,7 @@ You can deploy to your cluster using `make` command.
 $ make deploy
 ```
 
-Canary Controller is installed in `canary-controller-manager` namespace.
+Canary Controller is installed in `canary-controller-system` namespace.
 
 ## Usage
 
