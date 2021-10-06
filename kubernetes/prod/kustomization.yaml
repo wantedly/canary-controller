@@ -1,0 +1,4 @@
+bases:
+- ../../config/default
+resources:
+- ../../crds/canary_v1beta1_canary.yaml
